@@ -1,0 +1,23 @@
+{
+  "name": "anti-maxwin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline discovery + verifikasi situs judol/pinjol/phishing untuk Hackathon Anti-Judol IMPHNEN",
+  "scripts": {
+    "jh": "node src/cli.ts",
+    "test": "node --test src/",
+    "typecheck": "tsc",
+    "setup": "playwright install chromium"
+  },
+  "engines": {
+    "node": ">=23.6"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.11",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "playwright": "^1.65.1"
+  }
+}
