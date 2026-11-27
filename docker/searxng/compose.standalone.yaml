@@ -1,0 +1,25 @@
+# SearXNG SAJA, untuk dijalankan di mesin lain (mis. VM teman dengan IP rumah yang lebih jarang kena
+# captcha Google). Tidak ada crawler di sini, jadi tidak membuka situs judol sama sekali.
+#
+#   cd docker/searxng
+#   SEARXNG_SECRET=$(openssl rand -hex 32) SEARXNG_BIND=<ip-tailscale> docker compose -f compose.standalone.yaml up -d
+#
+# Lalu di .env VPS: SEARXNG_URL=http://<ip-tailscale>:8080
+# Jangan bind ke 0.0.0.0 di jaringan publik: SearXNG tanpa limiter bisa disalahgunakan orang lain.
+services:
+  searxng:
+    image: searxng/searxng:latest
+    restart: unless-stopped
+    environment:
+      SEARXNG_SECRET: ${SEARXNG_SECRET:?isi SEARXNG_SECRET}
+    volumes:
+      - ./settings.yml:/etc/searxng/settings.yml:ro
+      - searxng-cache:/var/cache/searxng
+    ports:
+      - "${SEARXNG_BIND:-127.0.0.1}:8080:8080"
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETGID, SETUID]
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  searxng-cache:

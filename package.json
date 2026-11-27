@@ -6,9 +6,10 @@
   "description": "Pipeline discovery + verifikasi situs judol/pinjol/phishing untuk Hackathon Anti-Judol IMPHNEN",
   "scripts": {
     "jh": "node src/cli.ts",
-    "test": "node --test src/",
+    "test": "node --test \"src/**/*.test.ts\"",
     "typecheck": "tsc",
-    "setup": "playwright install chromium"
+    "setup": "playwright install chromium",
+    "docker:test": "docker compose run --rm --build test"
   },
   "engines": {
     "node": ">=23.6"

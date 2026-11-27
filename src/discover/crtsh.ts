@@ -9,7 +9,7 @@ export const DEFAULT_KEYWORDS = [
 
 type CrtEntry = { name_value: string; not_before: string };
 
-export async function discoverCrtsh(keywords: string[], days: number) {
+export async function discoverCrtsh(keywords: string[], days: number, source = 'crtsh', parent: string | null = null) {
   const since = Date.now() - days * 86_400_000;
   let total = 0;
   for (const kw of keywords) {
@@ -23,7 +23,7 @@ export async function discoverCrtsh(keywords: string[], days: number) {
         if (Date.parse(r.not_before + 'Z') < since) continue;
         for (const name of r.name_value.split('\n')) {
           const host = name.trim().replace(/^\*\./, '');
-          if (addCandidate(host, 'crtsh')) added++;
+          if (addCandidate(host, source, parent)) added++;
         }
       }
       console.log(`[crt.sh] ${kw}: ${rows.length} sertifikat, ${added} kandidat baru`);

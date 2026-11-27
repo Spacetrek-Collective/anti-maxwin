@@ -1,0 +1,32 @@
+# Satu query per baris. '#' = komentar. Dijalankan worker discover via Search API.
+# Halaman judol yang disusupkan ke situs instansi/kampus/sekolah
+site:go.id "slot gacor"
+site:go.id "situs toto"
+site:go.id togel
+site:go.id "slot maxwin"
+site:ac.id "slot gacor"
+site:ac.id "situs toto"
+site:ac.id togel
+site:sch.id "slot gacor"
+site:sch.id togel
+site:desa.id "slot gacor"
+site:or.id "slot gacor"
+site:go.id inurl:wp-content slot
+site:ac.id inurl:wp-content slot
+# Situs judol langsung
+"link alternatif" slot gacor
+"daftar slot" maxwin
+"situs toto" 4d resmi
+"slot deposit qris" 10rb
+"bonus new member" slot 100
+"rtp live" slot hari ini
+"bandar togel" terpercaya
+"mahjong ways" gacor daftar
+"scatter hitam" link resmi
+"sabung ayam" online daftar
+# Pinjol ilegal / penipuan
+"pinjaman cair tanpa ktp"
+"pinjaman online" "tanpa bi checking" langsung cair
+"pinjaman tanpa jaminan" cair 5 menit
+"klaim hadiah" undian resmi bank
+"robot trading" profit harian

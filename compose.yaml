@@ -1,0 +1,108 @@
+# ⚠️ Jalankan HANYA di VPS sekali pakai, BUKAN di laptop. Lihat README "Menjalankan di VPS".
+#
+#   searxng ◄── discover ─┐                         ┌─ ui (127.0.0.1:8787, akses via SSH tunnel)
+#               ads ──────┼─► data/anti-maxwin.db ◄─┤
+#               fetch ────┘   (SQLite = antrean)    └─ triage (hanya ke API LLM)
+#
+# Satu image, beda perintah. Semua container: non-root, root fs read-only, cap_drop ALL,
+# no-new-privileges. Container browser (fetch, ads) ditambah seccomp Playwright + batas RAM/PID.
+
+x-common: &common
+  build: .
+  image: anti-maxwin:latest
+  env_file: .env
+  environment:
+    DATA_DIR: /data
+  volumes:
+    - ./data:/data
+    - ./dorks:/app/dorks:ro
+  read_only: true
+  tmpfs:
+    - /tmp:size=256m,mode=1777
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+  init: true
+  restart: unless-stopped
+  mem_limit: 512m
+  pids_limit: 128
+  logging:
+    driver: json-file
+    options: { max-size: 10m, max-file: "3" }
+
+x-browser: &browser
+  <<: *common
+  shm_size: 1gb
+  mem_limit: 3g
+  cpus: 2
+  pids_limit: 1024
+  tmpfs:
+    - /tmp:size=1g,mode=1777
+  security_opt:
+    - no-new-privileges:true
+    # Dari docker/fetch-seccomp.sh. Tanpa file ini, set CHROMIUM_SANDBOX=0 di .env dan hapus baris ini
+    # (Chromium tanpa sandbox: isolasi hanya dari container + VPS).
+    - seccomp=./docker/seccomp_profile.json
+
+services:
+  # Metasearch self-hosted untuk dork (pengganti Search API berbayar). Tanpa `ports`: hanya bisa
+  # diakses container lain di compose ini. Mau pakai SearXNG di mesin lain? Set SEARXNG_URL di .env
+  # dan lihat docker/searxng/compose.standalone.yaml.
+  searxng:
+    image: searxng/searxng:latest
+    restart: unless-stopped
+    environment:
+      SEARXNG_SECRET: ${SEARXNG_SECRET:?isi SEARXNG_SECRET di .env (openssl rand -hex 32)}
+    volumes:
+      - ./docker/searxng/settings.yml:/etc/searxng/settings.yml:ro
+      - searxng-cache:/var/cache/searxng
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETGID, SETUID]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "3" }
+
+  discover:
+    <<: *common
+    command: [worker, discover]
+    depends_on: [searxng]
+
+  fetch:
+    <<: *browser
+    command: [worker, fetch]
+
+  ads:
+    <<: *browser
+    command: [worker, ads]
+
+  triage:
+    <<: *common
+    command: [worker, triage]
+
+  ui:
+    <<: *common
+    command: [ui]
+    environment:
+      DATA_DIR: /data
+      UI_HOST: 0.0.0.0
+    # Hanya localhost VPS. Dari laptop: ssh -L 8787:127.0.0.1:8787 user@vps
+    ports:
+      - "127.0.0.1:8787:8787"
+
+  # Tes + typecheck: docker compose run --rm --build test
+  test:
+    profiles: [tools]
+    build: { context: ., target: dev }
+    image: anti-maxwin:dev
+    read_only: true
+    tmpfs: [/tmp]
+    environment:
+      DATA_DIR: /tmp/data
+    network_mode: none
+    restart: "no"
+
+volumes:
+  searxng-cache:

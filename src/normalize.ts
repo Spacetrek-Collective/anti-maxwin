@@ -36,3 +36,25 @@ export function normalize(input: string): NormalizeResult {
   const key = host + path;
   return { ok: true, key, url: `${u.protocol}//${u.hostname}${u.pathname}` };
 }
+
+/** Hostname lowercase tanpa www., atau null kalau bukan URL valid. */
+export function hostOf(u: string): string | null {
+  try {
+    return new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(u) ? u : `https://${u}`).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+}
+
+/** Domain besar/umum yang tidak pernah jadi kandidat (link keluar, popup, dsb). */
+const IGNORED = [
+  'google.com', 'google.co.id', 'googleapis.com', 'gstatic.com', 'googletagmanager.com', 'doubleclick.net',
+  'youtube.com', 'youtu.be', 'facebook.com', 'fb.com', 'instagram.com', 'twitter.com', 'x.com', 'tiktok.com',
+  'whatsapp.com', 'wa.me', 't.me', 'telegram.org', 'telegram.me', 'line.me', 'apple.com', 'microsoft.com',
+  'cloudflare.com', 'jsdelivr.net', 'wordpress.org', 'wordpress.com', 'gravatar.com', 'w3.org', 'schema.org',
+  'livechatinc.com', 'tawk.to', 'histats.com', 'pinterest.com', 'linkedin.com', 'github.com', 'wikipedia.org',
+];
+
+export function isIgnoredHost(host: string): boolean {
+  return IGNORED.some((d) => host === d || host.endsWith(`.${d}`));
+}
